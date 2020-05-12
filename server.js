@@ -91,7 +91,7 @@ app.post('/register',function(req,res){
     email:req.body.emailId,
     location:req.body.location,
     password:password,
-    isLogged:true,
+    isLogged:false,
 
    });
    }
@@ -136,18 +136,25 @@ app.post('/home',function(req,res){
      console.log(req.body.email);
      
      user.find({email:req.body.email,password:req.body.password},function(req,res){
-         console.log('fine');
+         
         //  console.log(res);
          name = res[0].name;
          console.log(name);
        
      });
-
+     
      if(name != ""){
+        user.updateOne({email:req.body.email,password:req.body.password},{$set:{isLogged:true}},function(req,res){
+            console.log(res);
+        });
         res.render("index.ejs",{name});
       }
      
 });
+
+//products
+
+
 
 
 
