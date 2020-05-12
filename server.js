@@ -28,6 +28,7 @@ var userSchema = new mongoose.Schema({
     phoneNo:Number,
     email:String,
     location:String,
+    password:String,
     isLogged:Boolean,
 
   });
@@ -78,38 +79,39 @@ let transport = nodemailer.createTransport({
     }
 });
 
-app.post('/home',function(req,res){
+app.post('/register',function(req,res){
+
     
     if(req.body != ""){
-  var item = new user({
+    var password = generatePassword();
+    console.log(password,'pass');     
+    var item = new user({
     name: req.body.name,
     phoneNo:req.body.phoneNo,
     email:req.body.emailId,
     location:req.body.location,
+    password:password,
     isLogged:true,
 
-  });
-}
+   });
+   }
 
-user.create(item, function(err, user){
+   user.create(item, function(err, user){
     if(err) console.log("err2");
     else{
       console.log("inserted item"+item);
       
     }
-  });
+   });
 
    name = req.body.name;
    
-
-   var password = generatePassword();
-   console.log(password,'pass');
    
    var message = {
     from: 'avikmika@gmail.com', // Sender address
-    to: 'avikpandey1@gmail.com',         // List of recipients
+    to: req.body.emailId,         // List of recipients
     subject: 'Login Credentials', // Subject line
-    text: 'Hi, login credentials mailId  = use the mail id you registered ans password  ' // Plain text body
+    text: 'Hi, login credentials mailId  = use the mail id you registered ans password  ' + password + "!" // Plain text body
     };
 
     transport.sendMail(message, function(err, info) {
@@ -120,15 +122,23 @@ user.create(item, function(err, user){
     }
    });
   
-   res.render("index.ejs",{name});
+   res.render("register.ejs");
   
  
 
 }); 
 
 
-
+//tXN9tBIA
 //login
+
+app.post('/home',function(req,res){
+     console.log(req.body.email);
+     user.find({email:req.body.email,password:req.body.password},function(req,res){
+         console.log('fine');
+         console.log(res);
+     });
+});
 
 
 
