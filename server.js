@@ -33,26 +33,39 @@ var userSchema = new mongoose.Schema({
 
   });
 
+var productSchema = new mongoose.Schema({
+    model:String,
+    price:Number,
+    phoneImage:Buffer,
+    sellerId:String,
+
+});  
+
 
 var user = mongoose.model("user", userSchema);
+var product = mongoose.model("product", productSchema);
 var temp  = 0;
   
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended:true}));
-
+var name = "";
 app.get('/home',function(req,res) {
-    res.render("index.ejs");
+    res.render("index.ejs",{name});
   });
 
 app.get('/login',function(req,res) {
-    res.render("login.ejs");
+    res.render("login.ejs",{name});
   });
 
 
 app.get('/register',function(req,res) {
-    res.render("register.ejs");
+    res.render("register.ejs",{name});
   });
+
+app.get('/productSell',function(req,res){
+    res.render("productSell.ejs",{name});
+  });  
 
 //password generator
 
@@ -105,8 +118,6 @@ app.post('/register',function(req,res){
    });
 
   
-   
-   
    var message = {
     from: 'avikmika@gmail.com', // Sender address
     to: req.body.emailId,         // List of recipients
@@ -131,7 +142,7 @@ app.post('/register',function(req,res){
 
 //tXN9tBIA
 //login
-var name = "";
+var sellerId = "";
 app.post('/home',function(req,res){
      console.log(req.body.email);
      
@@ -139,6 +150,7 @@ app.post('/home',function(req,res){
          
         //  console.log(res);
          name = res[0].name;
+         sellerId = res[0]._id;
          console.log(name);
        
      });
@@ -153,6 +165,32 @@ app.post('/home',function(req,res){
 });
 
 //products
+
+app.post('/productSell',function(req,res){
+     
+    if(res.body!=""){
+
+        var phoneItem = new product({
+            name: req.body.model,
+            price:req.body.price,
+            phoneImage:req.body.phoneImage,
+            sellerId:sellerId,
+        
+           });
+
+    }
+    console.log(req.body);
+    product.create(phoneItem, function(err, user){
+        if(err) console.log("err2");
+        else{
+          console.log("inserted item"+phoneItem);
+          
+        }
+       });
+
+     res.render('productSell.ejs',{name});  
+
+});
 
 
 
