@@ -3,6 +3,8 @@ var express = require('express');
 var bodyParser  = require('body-parser');
 var app = express();
 var mongoose = require('mongoose');
+var ejs = require('ejs'); 
+var nodemailer = require('nodemailer');
 
 const url = "mongodb+srv://user:user@cluster0-6ubxg.mongodb.net/phoneKart?retryWrites=true&w=majority";
 
@@ -26,11 +28,13 @@ var userSchema = new mongoose.Schema({
     phoneNo:Number,
     email:String,
     location:String,
+    isLogged:Boolean,
 
   });
 
 
 var user = mongoose.model("user", userSchema);
+var temp  = 0;
   
 
 app.set("view engine", "ejs");
@@ -48,15 +52,41 @@ app.get('/login',function(req,res) {
 app.get('/register',function(req,res) {
     res.render("register.ejs");
   });
-  
-app.post('/submit',function(req,res){
-    console.log(req.body.name);
+
+//password generator
+
+function generatePassword() {
+    var length = 8,
+        charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+        retVal = "";
+    for (var i = 0, n = charset.length; i < length; ++i) {
+        retVal += charset.charAt(Math.floor(Math.random() * n));
+    }
+    return retVal;
+}
+
+var name = "";
+//register
+
+let transport = nodemailer.createTransport({
+    // host: 'smtp.mailtrap.io',
+    service: 'gmail',
+    port: 2525,
+    auth: {
+       user: 'avikmika@gmail.com',
+       pass: 'Avik@838'
+    }
+});
+
+app.post('/home',function(req,res){
+    
     if(req.body != ""){
   var item = new user({
     name: req.body.name,
     phoneNo:req.body.phoneNo,
-    email:req.body.email,
+    email:req.body.emailId,
     location:req.body.location,
+    isLogged:true,
 
   });
 }
@@ -69,9 +99,40 @@ user.create(item, function(err, user){
     }
   });
 
-   res.render('index.ejs');
+   name = req.body.name;
+   
+
+   var password = generatePassword();
+   console.log(password,'pass');
+   
+   var message = {
+    from: 'avikmika@gmail.com', // Sender address
+    to: 'avikpandey1@gmail.com',         // List of recipients
+    subject: 'Login Credentials', // Subject line
+    text: 'Hi, login credentials mailId  = use the mail id you registered ans password  ' // Plain text body
+    };
+
+    transport.sendMail(message, function(err, info) {
+    if (err) {
+      console.log(err)
+    } else {
+      console.log(info);
+    }
+   });
+  
+   res.render("index.ejs",{name});
+  
+ 
 
 }); 
+
+
+
+//login
+
+
+
+
 
 
 app.listen(3000, function() {
