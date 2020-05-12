@@ -39,32 +39,52 @@ var productSchema = new mongoose.Schema({
     phoneImage:Buffer,
     sellerId:String,
 
-});  
+}); 
+
+var orderSchema = new mongoose.Schema({
+    model:String,
+    price:Number,
+    address:String,
+    date:Date,
+
+})
 
 
 var user = mongoose.model("user", userSchema);
 var product = mongoose.model("product", productSchema);
+var order = mongoose.model("order" , orderSchema);
 var temp  = 0;
   
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended:true}));
 var name = "";
+var productDetail = [];
 app.get('/home',function(req,res) {
-    res.render("index.ejs",{name});
+
+    product.find({},function(req,res,err){
+       if(err){
+           console.log(err);
+       }
+       else{
+           productDetail = res;
+        //    console.log(productDetail);
+       }
+    });
+    res.render("index.ejs",{name,productDetail});
   });
 
 app.get('/login',function(req,res) {
-    res.render("login.ejs",{name});
+    res.render("login.ejs",{name,productDetail});
   });
 
 
 app.get('/register',function(req,res) {
-    res.render("register.ejs",{name});
+    res.render("register.ejs",{name,productDetail});
   });
 
 app.get('/productSell',function(req,res){
-    res.render("productSell.ejs",{name});
+    res.render("productSell.ejs",{name,productDetail});
   });  
 
 //password generator
@@ -171,7 +191,7 @@ app.post('/productSell',function(req,res){
     if(res.body!=""){
 
         var phoneItem = new product({
-            name: req.body.model,
+            model: req.body.model,
             price:req.body.price,
             phoneImage:req.body.phoneImage,
             sellerId:sellerId,
@@ -188,7 +208,7 @@ app.post('/productSell',function(req,res){
         }
        });
 
-     res.render('productSell.ejs',{name});  
+     res.render('productSell.ejs',{name,productDetail});  
 
 });
 
