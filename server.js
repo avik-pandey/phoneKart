@@ -66,7 +66,7 @@ function generatePassword() {
     return retVal;
 }
 
-var name = "";
+
 //register
 
 let transport = nodemailer.createTransport({
@@ -104,7 +104,7 @@ app.post('/register',function(req,res){
     }
    });
 
-   name = req.body.name;
+  
    
    
    var message = {
@@ -131,17 +131,23 @@ app.post('/register',function(req,res){
 
 //tXN9tBIA
 //login
-
+var name = "";
 app.post('/home',function(req,res){
      console.log(req.body.email);
+     
      user.find({email:req.body.email,password:req.body.password},function(req,res){
          console.log('fine');
-         console.log(res);
+        //  console.log(res);
+         name = res[0].name;
+         console.log(name);
+       
      });
+
+     if(name != ""){
+        res.render("index.ejs",{name});
+      }
+     
 });
-
-
-
 
 
 
