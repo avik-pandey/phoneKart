@@ -42,10 +42,13 @@ var productSchema = new mongoose.Schema({
 }); 
 
 var orderSchema = new mongoose.Schema({
+    name:String,
     model:String,
     price:Number,
     address:String,
     date:Date,
+    sellerId:String,
+    buyerId:String,
 
 })
 
@@ -85,7 +88,11 @@ app.get('/register',function(req,res) {
 
 app.get('/productSell',function(req,res){
     res.render("productSell.ejs",{name,productDetail});
-  });  
+  }); 
+
+app.get('/bought',function(req,res){
+    res.render("bought.ejs",{name,productDetail}); 
+});  
 
 //password generator
 
@@ -213,16 +220,45 @@ app.post('/productSell',function(req,res){
 });
 
 //orders
-
+var productId = "";
 app.post("/test",function(req,res){
-  console.log("ppp");
-  var tsID = req.body;
-  console.log("stsID "+tsID.str );
+  // console.log("ppp");
+  productId = req.body;
+  console.log("stsID "+productId.str );
+});
+var buyerId = sellerId;
+app.post('/bought',function(req,res){
+      var orderedProductDetails = productDetail[productId.str];
+      console.log(orderedProductDetails);
+
+      if(req.body != "" ){
+        var boughtItem = new order({
+          name:req.body.name,
+          model:orderedProductDetails.model,
+          price:orderedProductDetails.price,
+          address:req.body.address,
+          date:req.body.date,
+          sellerId:orderedProductDetails.sellerId,
+          buyerId:sellerId,
+
+        });
+      }
+
+      order.create(boughtItem,function(err){
+          if(err){
+            console.log(err);
+          }
+          else{
+            console.log("inserted ",boughtItem);
+
+          }
+      })
+
+      res.render("bought.ejs",{name,productDetail});
+
 });
 
-// app.post('/home',function(req,res){
-      
-// });
+
 
 
 
