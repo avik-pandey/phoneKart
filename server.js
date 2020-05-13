@@ -5,6 +5,9 @@ var app = express();
 var mongoose = require('mongoose');
 var ejs = require('ejs'); 
 var nodemailer = require('nodemailer');
+var Publishable_key  = "pk_test_JmvcFBxXBX3bHfZkcEDJG38A00PnhiAfhG";
+var Stripe_key = "sk_test_V1jI1mtBnnn11EqTh3OOEQ3o00YA0BzOCY";
+var stripe = require('stripe')(Stripe_key);
 
 const url = "mongodb+srv://user:user@cluster0-6ubxg.mongodb.net/phoneKart?retryWrites=true&w=majority";
 
@@ -49,8 +52,9 @@ var orderSchema = new mongoose.Schema({
     date:Date,
     sellerId:String,
     buyerId:String,
+    couponApplied:Boolean
 
-})
+});
 
 
 var user = mongoose.model("user", userSchema);
@@ -74,24 +78,24 @@ app.get('/home',function(req,res) {
         //    console.log(productDetail);
        }
     });
-    res.render("index.ejs",{name,productDetail});
+    res.render("index.ejs",{name,productDetail,key:Publishable_key});
   });
 
 app.get('/login',function(req,res) {
-    res.render("login.ejs",{name,productDetail});
+    res.render("login.ejs",{name,productDetail,key:Publishable_key});
   });
 
 
 app.get('/register',function(req,res) {
-    res.render("register.ejs",{name,productDetail});
+    res.render("register.ejs",{name,productDetail,key:Publishable_key});
   });
 
 app.get('/productSell',function(req,res){
-    res.render("productSell.ejs",{name,productDetail});
+    res.render("productSell.ejs",{name,productDetail,key:Publishable_key});
   }); 
 
 app.get('/bought',function(req,res){
-    res.render("bought.ejs",{name,productDetail}); 
+    res.render("bought.ejs",{name,productDetail,key:Publishable_key}); 
 });  
 
 //password generator
@@ -160,7 +164,7 @@ app.post('/register',function(req,res){
     }
    });
   
-   res.render("register.ejs");
+   res.render("register.ejs",{name,productDetail,key:Publishable_key});
   
  
 
@@ -186,7 +190,7 @@ app.post('/home',function(req,res){
         user.updateOne({email:req.body.email,password:req.body.password},{$set:{isLogged:true}},function(req,res){
             console.log(res);
         });
-        res.render("index.ejs",{name,productDetail});
+        res.render("index.ejs",{name,productDetail,key:Publishable_key});
       }
      
 });
@@ -215,7 +219,7 @@ app.post('/productSell',function(req,res){
         }
        });
 
-     res.render('productSell.ejs',{name,productDetail});  
+     res.render('productSell.ejs',{name,productDetail,key:Publishable_key});  
 
 });
 
@@ -227,9 +231,20 @@ app.post("/test",function(req,res){
   console.log("stsID "+productId.str );
 });
 var buyerId = sellerId;
+var couponCode = "avik";
 app.post('/bought',function(req,res){
       var orderedProductDetails = productDetail[productId.str];
       console.log(orderedProductDetails);
+      var couponStatus = false;
+      if(req.body.coupon!=""){
+         if(req.body.coupon == couponCode ){
+           orderedProductDetails.price = orderedProductDetails.price - 0.2*orderedProductDetails.price;
+           couponStatus = true;
+         }
+         else{
+           couponStatus = false;
+         }
+      }
 
       if(req.body != "" ){
         var boughtItem = new order({
@@ -240,6 +255,7 @@ app.post('/bought',function(req,res){
           date:req.body.date,
           sellerId:orderedProductDetails.sellerId,
           buyerId:sellerId,
+          couponApplied:couponStatus,
 
         });
       }
@@ -254,9 +270,44 @@ app.post('/bought',function(req,res){
           }
       })
 
-      res.render("bought.ejs",{name,productDetail});
+      res.render("payment.ejs",{name,productDetail,key:Publishable_key});
 
 });
+
+app.post('/payment', function(req, res){ 
+  
+  // Moreover you can take more details from user 
+  // like Address, Name, etc from form 
+  stripe.customers.create({ 
+      email: req.body.stripeEmail, 
+      source: req.body.stripeToken, 
+      name: 'Gourav Hammad', 
+      address: { 
+          line1: 'TC 9/4 Old MES colony', 
+          postal_code: '452331', 
+          city: 'Indore', 
+          state: 'Madhya Pradesh', 
+          country: 'India', 
+      } 
+  }) 
+  .then((customer) => { 
+
+      return stripe.charges.create({ 
+          amount: 2500,     // Charing Rs 25 
+          description: 'Web Development Product', 
+          currency: 'INR', 
+          customer: customer.id 
+      }); 
+  }) 
+  .then((charge) => { 
+      res.send("Success")  // If no error occurs 
+  }) 
+  .catch((err) => { 
+      res.send(err)       // If some error occurs 
+  }); 
+}) 
+
+
 
 
 
