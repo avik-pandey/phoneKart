@@ -318,7 +318,8 @@ app.post('/payment', function(req, res){
   }) 
   .then((charge) => { 
       
-      res.send("Success")  // If no error occurs 
+      res.send("<h1>success!</h1><a href = '/home' >go to home</a>")
+                         // If no error occurs 
   }) 
   .catch((err) => { 
       console.log(err);
