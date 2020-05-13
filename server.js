@@ -76,7 +76,9 @@ app.get('/home',function(req,res) {
        }
        else{
            productDetail = res;
-        //    console.log(productDetail);
+          //  console.log(res);
+          //  console.log("ok");
+          //  console.log(productDetail);
        }
     });
     res.render("index.ejs",{name,productDetail,key:Publishable_key,fPrice});
@@ -154,7 +156,7 @@ app.post('/register',function(req,res){
     from: 'avikmika@gmail.com', // Sender address
     to: req.body.emailId,         // List of recipients
     subject: 'Login Credentials', // Subject line
-    text: 'Hi, login credentials mailId  = use the mail id you registered ans password  ' + password + "!" // Plain text body
+    text: 'Hi, login credentials mailId  =' + req.body.emailId + 'use the mail id you registered ans password  ' + password + "!" // Plain text body
     };
 
     transport.sendMail(message, function(err, info) {
@@ -175,8 +177,10 @@ app.post('/register',function(req,res){
 //tXN9tBIA
 //login
 var sellerId = "";
+var loggedEmail = "";
 app.post('/home',function(req,res){
      console.log(req.body.email);
+     loggedEmail = req.body.email;
      
      user.find({email:req.body.email,password:req.body.password},function(req,res){
          
@@ -253,6 +257,7 @@ app.post('/bought',function(req,res){
 
       if(req.body != "" ){
         fPrice = orderedProductDetails.price;
+        console.log(fPrice);
         fAddress = req.body.address;
         fName = req.body.name;
 
@@ -274,13 +279,14 @@ app.post('/bought',function(req,res){
             console.log(err);
           }
           else{
-            fPrice = fPrice*100;
+            fPrice = 100*fPrice;
             console.log("inserted ",boughtItem);
+          
 
           }
       })
 
-      res.render("payment.ejs",{name,productDetail,key:Publishable_key,fPrice});
+       res.render("payment.ejs",{name,productDetail,key:Publishable_key,fPrice});
 
 });
 
@@ -317,6 +323,23 @@ app.post('/payment', function(req, res){
       }); 
   }) 
   .then((charge) => { 
+    console.log(loggedEmail);
+    if(loggedEmail != ""){  
+    var message = {
+      from: 'avikmika@gmail.com', // Sender address
+      to: loggedEmail,         // List of recipients
+      subject: 'Login Credentials', // Subject line
+      text: "Your order has been placed and payment has also been done.Thanks for shopping !" // Plain text body
+      };
+  
+      transport.sendMail(message, function(err, info) {
+      if (err) {
+        console.log(err)
+      } else {
+        console.log(info);
+      }
+     });
+    }
       
       res.send("<h1>success!</h1><a href = '/home' >go to home</a>")
                          // If no error occurs 
