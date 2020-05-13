@@ -67,6 +67,7 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended:true}));
 var name = "";
 var productDetail = [];
+var fPrice = "";
 app.get('/home',function(req,res) {
 
     product.find({},function(req,res,err){
@@ -78,24 +79,24 @@ app.get('/home',function(req,res) {
         //    console.log(productDetail);
        }
     });
-    res.render("index.ejs",{name,productDetail,key:Publishable_key});
+    res.render("index.ejs",{name,productDetail,key:Publishable_key,fPrice});
   });
 
 app.get('/login',function(req,res) {
-    res.render("login.ejs",{name,productDetail,key:Publishable_key});
+    res.render("login.ejs",{name,productDetail,key:Publishable_key,fPrice});
   });
 
 
 app.get('/register',function(req,res) {
-    res.render("register.ejs",{name,productDetail,key:Publishable_key});
+    res.render("register.ejs",{name,productDetail,key:Publishable_key,fPrice});
   });
 
 app.get('/productSell',function(req,res){
-    res.render("productSell.ejs",{name,productDetail,key:Publishable_key});
+    res.render("productSell.ejs",{name,productDetail,key:Publishable_key,fPrice});
   }); 
 
 app.get('/bought',function(req,res){
-    res.render("bought.ejs",{name,productDetail,key:Publishable_key}); 
+    res.render("bought.ejs",{name,productDetail,key:Publishable_key,fPrice}); 
 });  
 
 //password generator
@@ -164,7 +165,7 @@ app.post('/register',function(req,res){
     }
    });
   
-   res.render("register.ejs",{name,productDetail,key:Publishable_key});
+   res.render("register.ejs",{name,productDetail,key:Publishable_key,fPrice});
   
  
 
@@ -190,7 +191,7 @@ app.post('/home',function(req,res){
         user.updateOne({email:req.body.email,password:req.body.password},{$set:{isLogged:true}},function(req,res){
             console.log(res);
         });
-        res.render("index.ejs",{name,productDetail,key:Publishable_key});
+        res.render("index.ejs",{name,productDetail,key:Publishable_key,fPrice});
       }
      
 });
@@ -219,7 +220,7 @@ app.post('/productSell',function(req,res){
         }
        });
 
-     res.render('productSell.ejs',{name,productDetail,key:Publishable_key});  
+     res.render('productSell.ejs',{name,productDetail,key:Publishable_key,fPrice});  
 
 });
 
@@ -231,7 +232,11 @@ app.post("/test",function(req,res){
   console.log("stsID "+productId.str );
 });
 var buyerId = sellerId;
-var couponCode = "avik";
+var couponCode = "avik"; //coupon
+
+// var fPrice = "";
+var fAddress = "";
+var fName = "";
 app.post('/bought',function(req,res){
       var orderedProductDetails = productDetail[productId.str];
       console.log(orderedProductDetails);
@@ -247,6 +252,10 @@ app.post('/bought',function(req,res){
       }
 
       if(req.body != "" ){
+        fPrice = orderedProductDetails.price;
+        fAddress = req.body.address;
+        fName = req.body.name;
+
         var boughtItem = new order({
           name:req.body.name,
           model:orderedProductDetails.model,
@@ -265,44 +274,54 @@ app.post('/bought',function(req,res){
             console.log(err);
           }
           else{
+            fPrice = fPrice*100;
             console.log("inserted ",boughtItem);
 
           }
       })
 
-      res.render("payment.ejs",{name,productDetail,key:Publishable_key});
+      res.render("payment.ejs",{name,productDetail,key:Publishable_key,fPrice});
 
 });
+
+
+
 
 app.post('/payment', function(req, res){ 
   
   // Moreover you can take more details from user 
   // like Address, Name, etc from form 
+  
+  // console.log(fPrice);
+  // console.log(fName);
+  // console.log(fAddress);
   stripe.customers.create({ 
       email: req.body.stripeEmail, 
       source: req.body.stripeToken, 
-      name: 'Gourav Hammad', 
+      name: fName, 
       address: { 
-          line1: 'TC 9/4 Old MES colony', 
-          postal_code: '452331', 
-          city: 'Indore', 
-          state: 'Madhya Pradesh', 
-          country: 'India', 
-      } 
+        line1: 'TC 9/4 Old MES colony', 
+        postal_code: '452331', 
+        city: 'Indore', 
+        state: 'Madhya Pradesh', 
+        country: 'India', 
+    } 
   }) 
   .then((customer) => { 
 
       return stripe.charges.create({ 
-          amount: 2500,     // Charing Rs 25 
-          description: 'Web Development Product', 
+          amount: fPrice,
+          description:"phone product",  
           currency: 'INR', 
           customer: customer.id 
       }); 
   }) 
   .then((charge) => { 
+      
       res.send("Success")  // If no error occurs 
   }) 
   .catch((err) => { 
+      console.log(err);
       res.send(err)       // If some error occurs 
   }); 
 }) 
