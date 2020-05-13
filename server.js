@@ -179,7 +179,7 @@ app.post('/home',function(req,res){
         user.updateOne({email:req.body.email,password:req.body.password},{$set:{isLogged:true}},function(req,res){
             console.log(res);
         });
-        res.render("index.ejs",{name});
+        res.render("index.ejs",{name,productDetail});
       }
      
 });
@@ -211,6 +211,18 @@ app.post('/productSell',function(req,res){
      res.render('productSell.ejs',{name,productDetail});  
 
 });
+
+//orders
+
+app.post("/test",function(req,res){
+  console.log("ppp");
+  var tsID = req.body;
+  console.log("stsID "+tsID.str );
+});
+
+// app.post('/home',function(req,res){
+      
+// });
 
 
 
