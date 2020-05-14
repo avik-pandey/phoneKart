@@ -19,31 +19,74 @@ mongoose.connect(url, {
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended:true}));
 
+var userSchema = new mongoose.Schema({
+    name:String,
+    phoneNo:Number,
+    email:String,
+    location:String,
+    password:String,
+    isLogged:Boolean,
+
+  });
+
+  var orderSchema = new mongoose.Schema({
+    name:String,
+    model:String,
+    price:Number,
+    address:String,
+    date:Date,
+    sellerId:String,
+    buyerId:String,
+    couponApplied:Boolean
+
+});
+
+var user = mongoose.model("user", userSchema);
+var order = mongoose.model("order" , orderSchema);
+
 app.get('/',function(req,res){
     
-    res.render("index.ejs");
+    res.render("index.ejs",{loggedInUsers,salesRecord});
     // res.send("sucess");
 })
 
 app.get('/home',function(req,res){
-    res.render("home.ejs");
+    res.render("home.ejs",{loggedInUsers,salesRecord});
 })
-
+var loggedInUsers = [];
+var salesRecord = [];
 app.get('/dailyLoggedIn',function(req,res){
-    res.render("dailyLoggedIn.ejs");
+    
+    user.find({isLogged:true},function(req,res){
+        console.log(res);
+        loggedInUsers = res;          
+    })
+
+    if(loggedInUsers.length > 0){
+    res.render("dailyLoggedIn.ejs",{loggedInUsers,salesRecord});
+    }
 })
 
 app.get('/DailySaleRecord',function(req,res){
-    res.render("DailySaleRecord.ejs");
+
+    order.find(function(req,res){
+        console.log(res);
+        salesRecord = res;
+    })
+    if(salesRecord.length > 0){
+    res.render("DailySaleRecord.ejs",{loggedInUsers,salesRecord});
+    }
 })
 
 app.post('/home',function(req,res){
     console.log(req.body.email);
     console.log(req.body.password);
      if(req.body.email == 'avikmika@gmail.com' && req.body.password == 'iampandey'){
-         res.render('home.ejs');
+         res.render('home.ejs',{loggedInUsers,salesRecord});
      }
 })
+
+
 
 
 
